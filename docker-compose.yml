@@ -1,0 +1,42 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: ruuvi-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: ruuvi_station
+    volumes:
+      - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - ruuvi-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ruuvi-station:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ruuvi-station-app
+    restart: unless-stopped
+    environment:
+      MONGODB_URI: mongodb://admin:password123@localhost:27017/ruuvi_station?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    privileged: true
+    network_mode: host
+
+volumes:
+  mongodb_data:
+
+networks:
+  ruuvi-network:
+    driver: bridge

@@ -1,0 +1,26 @@
+9904 050daf7382c32afe90fc40ff70acb6ae0cdff330fe2fc2a9
+9904 050db17396c32ffe88fc3cff74acb6ae0ce1f330fe2fc2a9
+9904 050dc073d8c32afe84fc48ff6cacb6ae0d75f330fe2fc2a9
+
+99 04 05 14 72 4e 54 c2 77 fe 8c fc 40 ff 68 b1 16 b8 47 a2 f3 30 fe 2f c2 a9
+
+{
+  "id": "6afce934a6e320fb3b7aadbe640191d8",
+  "address": "",
+  "addressType": "unknown",
+  "connectable": true,
+  "advertisement": {
+    "localName": "Ruuvi C2A9",
+    "manufacturerData": {
+      "type": "Buffer",
+      "data": [
+        153, 4, 5, 13, 211, 112, 113, 195, 37, 254, 136, 252, 56, 255, 112, 172,
+        86, 174, 10, 239, 243, 48, 254, 47, 194, 169
+      ]
+    },
+    "serviceUuids": ["6e400001b5a3f393e0a9e50e24dcca9e"]
+  },
+  "rssi": -74,
+  "mtu": null,
+  "state": "disconnected"
+}
