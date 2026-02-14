@@ -3,7 +3,7 @@
  * Handles Bluetooth Low Energy device scanning
  */
 
-import noble from "npm:@stoprocent/noble";
+import noble from "@stoprocent/noble";
 import { BLEPeripheral } from "../types/ruuvi.types.ts";
 import { Logger } from "./logger.ts";
 

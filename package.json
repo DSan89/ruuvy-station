@@ -1,0 +1,17 @@
+{
+  "name": "ruuvi-station",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node main.js",
+    "dev": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@stoprocent/noble": "^1.17.0",
+    "mongodb": "^6.8.0",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

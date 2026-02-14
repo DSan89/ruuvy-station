@@ -1,0 +1,20 @@
+# Use Deno official image
+FROM denoland/deno:2.1.4
+
+# Set working directory
+WORKDIR /app
+
+# Copy dependency files
+COPY deno.json deno.lock* ./
+
+# Copy API source code
+COPY api/ ./api/
+
+# Cache dependencies
+RUN deno install --entrypoint api/main.ts
+
+# Expose API port
+EXPOSE 8000
+
+# Run the API
+CMD ["deno", "run", "--allow-all", "api/main.ts"]
