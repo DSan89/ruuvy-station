@@ -66,9 +66,13 @@ export class BleScanner {
 
   private setupStateChangeListener(): void {
     noble.on("stateChange", async (state: string) => {
+      this.logger.info(`🔵 BLE State changed: ${state}`); // ← NUOVO
+
       if (state === "poweredOn") {
+        this.logger.info("✅ Bluetooth powered ON - starting scan"); // ← NUOVO
         await this.startScanning();
       } else {
+        this.logger.warn(`⚠️ Bluetooth state: ${state} - stopping scan`); // ← NUOVO
         await this.stopScanning();
       }
     });
@@ -76,6 +80,9 @@ export class BleScanner {
 
   private setupDiscoveryListener(): void {
     noble.on("discover", async (peripheral: any) => {
+      this.logger.debug(
+        `📡 Device discovered: ${peripheral.address} - RSSI: ${peripheral.rssi}`,
+      );
       const blePeripheral: BLEPeripheral = {
         address: peripheral.address,
         advertisement: peripheral.advertisement,
@@ -85,6 +92,15 @@ export class BleScanner {
       for (const handler of this.discoveryHandlers) {
         await handler(blePeripheral);
       }
+    });
+
+    // AGGIUNGI ANCHE:
+    noble.on("scanStart", () => {
+      this.logger.info("🟢 BLE Scan STARTED");
+    });
+
+    noble.on("scanStop", () => {
+      this.logger.info("🔴 BLE Scan STOPPED");
     });
   }
 }
