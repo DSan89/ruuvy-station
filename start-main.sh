@@ -23,7 +23,7 @@ echo -e "${YELLOW}Log file:${NC} $LOG_FILE"
 echo ""
 
 # Esegui main.js con Node.js in background
-nohup node "$WORK_DIR/main.js" > "$LOG_FILE" 2>&1 &
+nohup node run dev > "$LOG_FILE" 2>&1 &
 PID=$!
 
 echo -e "${GREEN}✓ main.js avviato in background${NC}"
