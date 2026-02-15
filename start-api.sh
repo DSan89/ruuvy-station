@@ -23,7 +23,7 @@ echo -e "${YELLOW}Log file:${NC} $LOG_FILE"
 echo ""
 
 # Esegui api/main.ts con Deno in background
-nohup deno run --allow-all "$WORK_DIR/api/main.ts" > "$LOG_FILE" 2>&1 &
+sudo nohup deno run --allow-all "$WORK_DIR/api/main.ts" > "$LOG_FILE" 2>&1 &
 PID=$!
 
 echo -e "${GREEN}✓ api/main.ts avviato in background${NC}"
