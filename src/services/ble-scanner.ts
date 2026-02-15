@@ -80,9 +80,6 @@ export class BleScanner {
 
   private setupDiscoveryListener(): void {
     noble.on("discover", async (peripheral: any) => {
-      this.logger.debug(
-        `📡 Device discovered: ${peripheral.address} - RSSI: ${peripheral.rssi}`,
-      );
       const blePeripheral: BLEPeripheral = {
         address: peripheral.address,
         advertisement: peripheral.advertisement,
