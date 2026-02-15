@@ -37,6 +37,7 @@ class Application {
 
       // Setup BLE discovery handler
       this.bleScanner.onDiscovery(async (peripheral) => {
+        this.logger.info("Discovered BLE device");
         await this.sensorProcessor.processPeripheral(peripheral);
       });
 
