@@ -276,6 +276,28 @@
       canvas {
         max-height: 350px;
       }
+
+      .time-btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: 2px solid #667eea;
+        background: white;
+        color: #667eea;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .time-btn:hover {
+        background: #667eea;
+        color: white;
+        transform: scale(1.05);
+      }
+
+      .time-btn.active {
+        background: #667eea;
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -297,6 +319,27 @@
           ⏱️ Auto-refresh: <span id="autoRefreshStatus">OFF</span>
         </button>
         <button onclick="processData()" id="processBtn">⚙️ Elabora Dati</button>
+      </div>
+
+      <div
+        class="device-selector"
+        style="background: #f0f4ff; border: 2px solid #667eea"
+      >
+        <label style="font-weight: bold; color: #667eea"
+          >📅 Intervallo Tempo:</label
+        >
+        <button onclick="setTimeRange(3)" class="time-btn" data-hours="3">
+          3 ore
+        </button>
+        <button onclick="setTimeRange(6)" class="time-btn" data-hours="6">
+          6 ore
+        </button>
+        <button onclick="setTimeRange(12)" class="time-btn" data-hours="12">
+          12 ore
+        </button>
+        <button onclick="setTimeRange(24)" class="time-btn" data-hours="24">
+          24 ore
+        </button>
       </div>
 
       <div class="config-section">
@@ -372,6 +415,7 @@
       const API_BASE = window.location.origin;
       let autoRefreshInterval = null;
       let currentDevice = null;
+      let currentTimeRange = 24; // Default 24 ore
       let temperatureChartInstance = null;
       let humidityChartInstance = null;
 
@@ -406,7 +450,10 @@
         currentDevice = device;
 
         try {
-          // Load latest reading
+          const endTime = Date.now();
+          const startTime = endTime - currentTimeRange * 60 * 60 * 1000; // Converti ore in ms
+
+          // Load latest reading per le stats
           if (device) {
             const response = await fetch(
               `${API_BASE}/api/sensors/device/latest?name=${encodeURIComponent(device)}`,
@@ -417,9 +464,9 @@
               displayStats(result.data);
             }
 
-            // Load recent readings
+            // Load readings per l'intervallo di tempo selezionato
             const readingsResponse = await fetch(
-              `${API_BASE}/api/sensors/device?name=${encodeURIComponent(device)}&limit=100`,
+              `${API_BASE}/api/sensors/range?device=${encodeURIComponent(device)}&start=${startTime}&end=${endTime}&limit=200`,
             );
             const readingsResult = await readingsResponse.json();
 
@@ -436,8 +483,9 @@
               displayStats(result.data[0]);
             }
 
+            // Load readings per l'intervallo di tempo selezionato
             const readingsResponse = await fetch(
-              `${API_BASE}/api/sensors/latest?limit=20`,
+              `${API_BASE}/api/sensors/range?start=${startTime}&end=${endTime}&limit=200`,
             );
             const readingsResult = await readingsResponse.json();
 
@@ -750,9 +798,31 @@
         }
       }
 
+      function setTimeRange(hours) {
+        currentTimeRange = hours;
+
+        // Aggiorna lo stile dei bottoni
+        document.querySelectorAll(".time-btn").forEach((btn) => {
+          btn.classList.remove("active");
+          if (parseInt(btn.dataset.hours) === hours) {
+            btn.classList.add("active");
+          }
+        });
+
+        // Ricarica i dati
+        loadLatestData();
+      }
+
       // Initialize
       fetchDevices().then(() => loadLatestData());
       loadConfig();
+
+      // Imposta il bottone attivo iniziale
+      document.querySelectorAll(".time-btn").forEach((btn) => {
+        if (parseInt(btn.dataset.hours) === currentTimeRange) {
+          btn.classList.add("active");
+        }
+      });
     </script>
   </body>
 </html>
