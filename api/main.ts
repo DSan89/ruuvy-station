@@ -9,7 +9,9 @@ import { SmartPlugService } from "./services/smartPlug.service.ts";
 //import { EmailService } from "./services/email.service.ts";
 
 const PORT = parseInt(Deno.env.get("PORT") || "8000");
-const MONGODB_URI = Deno.env.get("MONGODB_URI") || "";
+const MONGODB_URI =
+  Deno.env.get("MONGODB_URI") ||
+  "mongodb://admin:password123@mongodb:27017/ruuvi_station?authSource=admin";
 
 const app = new Application();
 const router = new Router();
