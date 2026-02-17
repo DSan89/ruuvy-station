@@ -8,7 +8,7 @@ import { SensorService } from "./services/sensor.service.ts";
 import { SmartPlugService } from "./services/smartPlug.service.ts";
 //import { EmailService } from "./services/email.service.ts";
 
-const PORT = parseInt(Deno.env.get("PORT") || "8000");
+const PORT = parseInt(Deno.env.get("PORT") || "33333");
 const MONGODB_URI =
   Deno.env.get("MONGODB_URI") ||
   "mongodb://admin:password123@127.0.0.1:27017/ruuvi_station?authSource=admin";
