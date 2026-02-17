@@ -213,4 +213,4 @@ app.use(router.allowedMethods());
 console.log(`🚀 Ruuvi Station API listening on http://localhost:${PORT}`);
 console.log(`📊 Dashboard available at http://localhost:${PORT}`);
 
-await app.listen({ port: PORT });
+await app.listen({ hostname: "0.0.0.0", port: PORT });
