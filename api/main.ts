@@ -12,9 +12,36 @@ const PORT = parseInt(Deno.env.get("PORT") || "33333");
 const MONGODB_URI =
   Deno.env.get("MONGODB_URI") ||
   "mongodb://admin:password123@127.0.0.1:27017/ruuvi_station?authSource=admin";
+const API_PASSWORD = Deno.env.get("API_PASSWORD") || "ruuvi123";
 
 const app = new Application();
 const router = new Router();
+
+// Simple in-memory token storage (in production, use a proper session store)
+const activeTokens = new Set<string>();
+
+// Middleware per verificare il token
+async function verifyToken(ctx: any, next: any) {
+  const pathname = ctx.request.url.pathname;
+
+  // Rotte pubbliche (login)
+  if (pathname === "/" || pathname === "/api/login") {
+    await next();
+    return;
+  }
+
+  // Rotte protette
+  const authHeader = ctx.request.headers.get("Authorization");
+  const token = authHeader?.replace("Bearer ", "");
+
+  if (!token || !activeTokens.has(token)) {
+    ctx.response.status = 401;
+    ctx.response.body = { success: false, error: "Unauthorized" };
+    return;
+  }
+
+  await next();
+}
 
 // Initialize services
 const sensorService = new SensorService(MONGODB_URI);
@@ -33,6 +60,60 @@ let smartPlugService = new SmartPlugService(
 router.get("/", async (ctx) => {
   ctx.response.body = await Deno.readTextFile("api/public/index.html");
   ctx.response.type = "text/html";
+});
+
+// Login endpoint
+router.post("/api/login", async (ctx) => {
+  try {
+    const body = await ctx.request.body.json();
+    const { password } = body;
+
+    if (!password) {
+      ctx.response.status = 400;
+      ctx.response.body = { success: false, error: "Password required" };
+      return;
+    }
+
+    if (password !== API_PASSWORD) {
+      ctx.response.status = 401;
+      ctx.response.body = { success: false, error: "Invalid password" };
+      return;
+    }
+
+    // Generate a simple token
+    const token = crypto.getRandomValues(new Uint8Array(32));
+    const tokenString = Array.from(token)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    activeTokens.add(tokenString);
+
+    ctx.response.body = {
+      success: true,
+      token: tokenString,
+      message: "Login successful",
+    };
+  } catch (error: any) {
+    ctx.response.status = 500;
+    ctx.response.body = { success: false, error: error.message };
+  }
+});
+
+// Logout endpoint
+router.post("/api/logout", async (ctx) => {
+  try {
+    const authHeader = ctx.request.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
+
+    if (token) {
+      activeTokens.delete(token);
+    }
+
+    ctx.response.body = { success: true, message: "Logged out" };
+  } catch (error: any) {
+    ctx.response.status = 500;
+    ctx.response.body = { success: false, error: error.message };
+  }
 });
 
 router.get("/api/process", async (ctx) => {
@@ -202,9 +283,15 @@ app.use(async (ctx, next) => {
     "Access-Control-Allow-Methods",
     "GET, POST, OPTIONS",
   );
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  ctx.response.headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization",
+  );
   await next();
 });
+
+// Token verification middleware
+app.use(verifyToken);
 
 // Use router
 app.use(router.routes());

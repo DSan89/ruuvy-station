@@ -298,115 +298,251 @@
         background: #667eea;
         color: white;
       }
+
+      .login-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+
+      .login-box {
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .login-title {
+        font-size: 2em;
+        color: #667eea;
+        margin-bottom: 10px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .login-subtitle {
+        color: #666;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 0.95em;
+      }
+
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .login-form input {
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1em;
+        transition: border-color 0.3s;
+      }
+
+      .login-form input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .login-form button {
+        padding: 12px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .login-form button:hover {
+        background: #5568d3;
+        transform: scale(1.02);
+      }
+
+      .login-form button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .login-error {
+        color: #ff6b6b;
+        text-align: center;
+        font-size: 0.9em;
+        margin-top: 10px;
+      }
+
+      .dashboard-container {
+        display: none;
+      }
+
+      .dashboard-container.visible {
+        display: block;
+      }
+
+      .logout-btn {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        padding: 8px 16px;
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .logout-btn:hover {
+        background: #ff5252;
+        transform: scale(1.05);
+      }
     </style>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1><span class="status-indicator"></span>Ruuvi Station Dashboard</h1>
-        <p class="subtitle">Monitoraggio sensori in tempo reale</p>
-      </header>
-
-      <div class="device-selector">
-        <label for="deviceSelect" style="font-weight: bold"
-          >Seleziona Dispositivo:</label
-        >
-        <select id="deviceSelect">
-          <option value="">Caricamento...</option>
-        </select>
-        <button onclick="loadLatestData()">🔄 Aggiorna</button>
-        <button onclick="toggleAutoRefresh()">
-          ⏱️ Auto-refresh: <span id="autoRefreshStatus">OFF</span>
-        </button>
-        <button onclick="processData()" id="processBtn">⚙️ Elabora Dati</button>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginContainer">
+      <div class="login-box">
+        <h2 class="login-title">🔐 Ruuvi Station</h2>
+        <p class="login-subtitle">Accedi al Dashboard</p>
+        <div class="login-form">
+          <input
+            type="password"
+            id="passwordInput"
+            placeholder="Inserisci la password"
+            onkeypress="if (event.key === 'Enter') login();"
+          />
+          <button onclick="login()" id="loginBtn">Accedi</button>
+          <div class="login-error" id="loginError"></div>
+        </div>
       </div>
+    </div>
 
-      <div
-        class="device-selector"
-        style="background: #f0f4ff; border: 2px solid #667eea"
-      >
-        <label style="font-weight: bold; color: #667eea"
-          >📅 Intervallo Tempo:</label
-        >
-        <button onclick="setTimeRange(3)" class="time-btn" data-hours="3">
-          3 ore
-        </button>
-        <button onclick="setTimeRange(6)" class="time-btn" data-hours="6">
-          6 ore
-        </button>
-        <button onclick="setTimeRange(12)" class="time-btn" data-hours="12">
-          12 ore
-        </button>
-        <button onclick="setTimeRange(24)" class="time-btn" data-hours="24">
-          24 ore
-        </button>
-      </div>
+    <!-- Dashboard Screen -->
+    <div class="dashboard-container" id="dashboardContainer">
+      <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+      <div class="container">
+        <header>
+          <h1><span class="status-indicator"></span>Ruuvi Station Dashboard</h1>
+          <p class="subtitle">Monitoraggio sensori in tempo reale</p>
+        </header>
 
-      <div class="config-section">
-        <div class="config-title">⚙️ Configurazione</div>
-        <div class="config-form">
-          <div class="form-group">
-            <label for="smartPlugIpInput">IP Smart Plug</label>
-            <input
-              type="text"
-              id="smartPlugIpInput"
-              placeholder="es. 192.168.1.111"
-            />
-          </div>
-          <div class="form-group">
-            <label for="temperatureThresholdInput"
-              >Soglia Temperatura (°C)</label
-            >
-            <input
-              type="number"
-              id="temperatureThresholdInput"
-              placeholder="es. 25"
-            />
-          </div>
-          <button onclick="saveConfig()" id="saveConfigBtn">
-            💾 Salva Configurazione
+        <div class="device-selector">
+          <label for="deviceSelect" style="font-weight: bold"
+            >Seleziona Dispositivo:</label
+          >
+          <select id="deviceSelect">
+            <option value="">Caricamento...</option>
+          </select>
+          <button onclick="loadLatestData()">🔄 Aggiorna</button>
+          <button onclick="toggleAutoRefresh()">
+            ⏱️ Auto-refresh: <span id="autoRefreshStatus">OFF</span>
+          </button>
+          <button onclick="processData()" id="processBtn">
+            ⚙️ Elabora Dati
           </button>
         </div>
-      </div>
 
-      <div class="stats-grid" id="statsGrid">
-        <div class="loading">Caricamento dati...</div>
-      </div>
-
-      <div class="charts-grid">
-        <div class="chart-container">
-          <div class="chart-title">📊 Temperatura nel Tempo</div>
-          <canvas id="temperatureChart"></canvas>
+        <div
+          class="device-selector"
+          style="background: #f0f4ff; border: 2px solid #667eea"
+        >
+          <label style="font-weight: bold; color: #667eea"
+            >📅 Intervallo Tempo:</label
+          >
+          <button onclick="setTimeRange(3)" class="time-btn" data-hours="3">
+            3 ore
+          </button>
+          <button onclick="setTimeRange(6)" class="time-btn" data-hours="6">
+            6 ore
+          </button>
+          <button onclick="setTimeRange(12)" class="time-btn" data-hours="12">
+            12 ore
+          </button>
+          <button onclick="setTimeRange(24)" class="time-btn" data-hours="24">
+            24 ore
+          </button>
         </div>
-        <div class="chart-container">
-          <div class="chart-title">💧 Umidità nel Tempo</div>
-          <canvas id="humidityChart"></canvas>
+
+        <div class="config-section">
+          <div class="config-title">⚙️ Configurazione</div>
+          <div class="config-form">
+            <div class="form-group">
+              <label for="smartPlugIpInput">IP Smart Plug</label>
+              <input
+                type="text"
+                id="smartPlugIpInput"
+                placeholder="es. 192.168.1.111"
+              />
+            </div>
+            <div class="form-group">
+              <label for="temperatureThresholdInput"
+                >Soglia Temperatura (°C)</label
+              >
+              <input
+                type="number"
+                id="temperatureThresholdInput"
+                placeholder="es. 25"
+              />
+            </div>
+            <button onclick="saveConfig()" id="saveConfigBtn">
+              💾 Salva Configurazione
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div class="readings-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Temperatura</th>
-              <th>Umidità</th>
-              <th>Pressione</th>
-              <th>Batteria</th>
-              <th>Movimento</th>
-              <th>RSSI</th>
-            </tr>
-          </thead>
-          <tbody id="readingsBody">
-            <tr>
-              <td colspan="7" class="loading">Caricamento letture...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="loading">Caricamento dati...</div>
+        </div>
 
-      <div class="last-updated">
-        Ultimo aggiornamento: <span id="lastUpdated">-</span>
+        <div class="charts-grid">
+          <div class="chart-container">
+            <div class="chart-title">📊 Temperatura nel Tempo</div>
+            <canvas id="temperatureChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">💧 Umidità nel Tempo</div>
+            <canvas id="humidityChart"></canvas>
+          </div>
+        </div>
+
+        <div class="readings-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Temperatura</th>
+                <th>Umidità</th>
+                <th>Pressione</th>
+                <th>Batteria</th>
+                <th>Movimento</th>
+                <th>RSSI</th>
+              </tr>
+            </thead>
+            <tbody id="readingsBody">
+              <tr>
+                <td colspan="7" class="loading">Caricamento letture...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="last-updated">
+          Ultimo aggiornamento: <span id="lastUpdated">-</span>
+        </div>
       </div>
     </div>
 
@@ -418,10 +554,103 @@
       let currentTimeRange = 24; // Default 24 ore
       let temperatureChartInstance = null;
       let humidityChartInstance = null;
+      let authToken = null;
+
+      // Check if token exists on page load
+      function checkAuth() {
+        authToken = localStorage.getItem("ruuvi_token");
+        if (authToken) {
+          showDashboard();
+        } else {
+          showLogin();
+        }
+      }
+
+      async function login() {
+        const password = document.getElementById("passwordInput").value;
+        const loginBtn = document.getElementById("loginBtn");
+        const loginError = document.getElementById("loginError");
+
+        if (!password) {
+          loginError.textContent = "Inserisci la password";
+          return;
+        }
+
+        try {
+          loginBtn.disabled = true;
+          loginBtn.textContent = "⏳ Accesso...";
+          loginError.textContent = "";
+
+          const response = await fetch(`${API_BASE}/api/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ password }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success) {
+            authToken = result.token;
+            localStorage.setItem("ruuvi_token", authToken);
+            showDashboard();
+          } else {
+            loginError.textContent = result.error || "Credenziali non valide";
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Accedi";
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          loginError.textContent = "Errore di connessione";
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Accedi";
+        }
+      }
+
+      async function logout() {
+        try {
+          await fetch(`${API_BASE}/api/logout`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          });
+        } catch (error) {
+          console.error("Logout error:", error);
+        }
+
+        authToken = null;
+        localStorage.removeItem("ruuvi_token");
+        showLogin();
+        document.getElementById("passwordInput").value = "";
+      }
+
+      function showLogin() {
+        document.getElementById("loginContainer").style.display = "flex";
+        document
+          .getElementById("dashboardContainer")
+          .classList.remove("visible");
+      }
+
+      function showDashboard() {
+        document.getElementById("loginContainer").style.display = "none";
+        document.getElementById("dashboardContainer").classList.add("visible");
+        initializeDashboard();
+      }
+
+      // Make API calls with auth token
+      function makeAuthFetch(url, options = {}) {
+        const headers = {
+          ...options.headers,
+          Authorization: `Bearer ${authToken}`,
+        };
+        return fetch(url, { ...options, headers });
+      }
 
       async function fetchDevices() {
         try {
-          const response = await fetch(`${API_BASE}/api/devices`);
+          const response = await makeAuthFetch(`${API_BASE}/api/devices`);
           const result = await response.json();
 
           if (result.success && result.data.length > 0) {
@@ -455,7 +684,7 @@
 
           // Load latest reading per le stats
           if (device) {
-            const response = await fetch(
+            const response = await makeAuthFetch(
               `${API_BASE}/api/sensors/device/latest?name=${encodeURIComponent(device)}`,
             );
             const result = await response.json();
@@ -465,7 +694,7 @@
             }
 
             // Load readings per l'intervallo di tempo selezionato
-            const readingsResponse = await fetch(
+            const readingsResponse = await makeAuthFetch(
               `${API_BASE}/api/sensors/range?device=${encodeURIComponent(device)}&start=${startTime}&end=${endTime}&limit=200`,
             );
             const readingsResult = await readingsResponse.json();
@@ -474,7 +703,7 @@
               displayReadings(readingsResult.data);
             }
           } else {
-            const response = await fetch(
+            const response = await makeAuthFetch(
               `${API_BASE}/api/sensors/latest?limit=1`,
             );
             const result = await response.json();
@@ -484,7 +713,7 @@
             }
 
             // Load readings per l'intervallo di tempo selezionato
-            const readingsResponse = await fetch(
+            const readingsResponse = await makeAuthFetch(
               `${API_BASE}/api/sensors/range?start=${startTime}&end=${endTime}&limit=200`,
             );
             const readingsResult = await readingsResponse.json();
@@ -698,7 +927,7 @@
           processBtn.disabled = true;
           processBtn.textContent = "⏳ Elaborazione...";
 
-          const response = await fetch(`${API_BASE}/api/process`, {
+          const response = await makeAuthFetch(`${API_BASE}/api/process`, {
             method: "GET",
           });
 
@@ -734,7 +963,7 @@
 
       async function loadConfig() {
         try {
-          const response = await fetch(`${API_BASE}/api/config`);
+          const response = await makeAuthFetch(`${API_BASE}/api/config`);
           const result = await response.json();
 
           if (result.success) {
@@ -765,7 +994,7 @@
             throw new Error("Compilare tutti i campi");
           }
 
-          const response = await fetch(`${API_BASE}/api/config`, {
+          const response = await makeAuthFetch(`${API_BASE}/api/config`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -813,16 +1042,24 @@
         loadLatestData();
       }
 
-      // Initialize
-      fetchDevices().then(() => loadLatestData());
-      loadConfig();
+      function initializeDashboard() {
+        fetchDevices().then(() => loadLatestData());
+        loadConfig();
 
-      // Imposta il bottone attivo iniziale
-      document.querySelectorAll(".time-btn").forEach((btn) => {
-        if (parseInt(btn.dataset.hours) === currentTimeRange) {
-          btn.classList.add("active");
-        }
-      });
+        // Imposta il bottone attivo iniziale
+        document.querySelectorAll(".time-btn").forEach((btn) => {
+          if (parseInt(btn.dataset.hours) === currentTimeRange) {
+            btn.classList.add("active");
+          }
+        });
+
+        document
+          .getElementById("deviceSelect")
+          .addEventListener("change", loadLatestData);
+      }
+
+      // Initialize authentication
+      checkAuth();
     </script>
   </body>
 </html>
