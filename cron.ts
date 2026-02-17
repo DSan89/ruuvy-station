@@ -1,6 +1,6 @@
-Deno.cron("Log a message", "* * * * *", async () => {
-  console.log("This will print once a minute.");
-  await fetch("http://localhost:8000/api/process")
+Deno.cron("Process smart plug every 5 minutes", "*/5 * * * *", async () => {
+  console.log("Processing smart plug state...");
+  await fetch("http://127.0.0.1:8000/api/process")
     .then(() => {
       console.log("Called /process endpoint successfully");
     })

@@ -22,6 +22,8 @@ echo -e "${YELLOW}Directory:${NC} $WORK_DIR"
 echo -e "${YELLOW}Log file:${NC} $LOG_FILE"
 echo ""
 
+deno run --allow-net --unstable-cron cron.ts > log/cron.log 2>&1 &
+
 # Esegui api/main.ts con Deno in background
 nohup deno run --allow-all "$WORK_DIR/api/main.ts" > "$LOG_FILE" 2>&1 &
 PID=$!
