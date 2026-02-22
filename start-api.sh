@@ -24,13 +24,17 @@ echo ""
 
 deno run --allow-net --unstable-cron cron.ts > log/cron.log 2>&1 &
 
-# Esegui api/main.ts con Deno in background
+
+# Esegui api/main.ts con Deno in background e salva il PID
 nohup deno run --allow-all "$WORK_DIR/api/main.ts" > "$LOG_FILE" 2>&1 &
 PID=$!
+PID_FILE="$WORK_DIR/api.pid"
+echo $PID > "$PID_FILE"
 
 echo -e "${GREEN}✓ api/main.ts avviato in background${NC}"
 echo -e "${GREEN}PID: $PID${NC}"
+echo -e "${GREEN}PID file: $PID_FILE${NC}"
 echo ""
 echo "Comandi utili:"
 echo "  • Logs:  tail -f $LOG_FILE"
-echo "  • Stop:  kill $PID"
+echo "  • Stop:  ./stop-api.sh"

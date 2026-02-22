@@ -6,6 +6,7 @@
 import { Application, Router } from "https://deno.land/x/oak@v17.1.3/mod.ts";
 import { SensorService } from "./services/sensor.service.ts";
 import { SmartPlugService } from "./services/smartPlug.service.ts";
+import { SmartPlugCronService } from "./services/smartplug-cron.service.ts";
 //import { EmailService } from "./services/email.service.ts";
 
 const PORT = parseInt(Deno.env.get("PORT") || "33333");
@@ -51,8 +52,14 @@ await sensorService.connect();
 let config = await sensorService.getConfig();
 let smartPlugService = new SmartPlugService(
   async () => (await sensorService.getConfig()).temperatureThreshold,
+  async () => (await sensorService.getConfig()).humidityThreshold,
   async () => (await sensorService.getConfig()).smartPlugIp,
   () => sensorService.getLatestTemperature(),
+  () => sensorService.getLatestHumidity(),
+);
+let smartPlugCronService = new SmartPlugCronService(
+  smartPlugService,
+  config.interval,
 );
 //const emailService = new EmailService();
 
@@ -165,25 +172,46 @@ router.get("/api/config", async (ctx) => {
 router.post("/api/config", async (ctx) => {
   try {
     const body = await ctx.request.body.json();
-    const { smartPlugIp, temperatureThreshold } = body;
+    const { smartPlugIp, temperatureThreshold, humidityThreshold, interval } =
+      body;
 
-    if (!smartPlugIp || temperatureThreshold === undefined) {
+    if (
+      !smartPlugIp ||
+      temperatureThreshold === undefined ||
+      humidityThreshold === undefined ||
+      interval === undefined
+    ) {
       ctx.response.status = 400;
       ctx.response.body = {
         success: false,
-        error: "smartPlugIp and temperatureThreshold required",
+        error:
+          "smartPlugIp, temperatureThreshold, humidityThreshold e interval richiesti",
       };
       return;
     }
 
-    await sensorService.updateConfig(smartPlugIp, temperatureThreshold);
+    await sensorService.updateConfig(
+      smartPlugIp,
+      temperatureThreshold,
+      humidityThreshold,
+      interval,
+    );
 
     // Ricrea il servizio con le nuove configurazioni
     config = await sensorService.getConfig();
     smartPlugService = new SmartPlugService(
       async () => (await sensorService.getConfig()).temperatureThreshold,
+      async () => (await sensorService.getConfig()).humidityThreshold,
       async () => (await sensorService.getConfig()).smartPlugIp,
       () => sensorService.getLatestTemperature(),
+      () => sensorService.getLatestHumidity(),
+    );
+    if (smartPlugCronService) {
+      smartPlugCronService.clear();
+    }
+    smartPlugCronService = new SmartPlugCronService(
+      smartPlugService,
+      config.interval,
     );
 
     ctx.response.body = {
@@ -263,6 +291,12 @@ router.get("/api/stats", async (ctx) => {
   const deviceName = ctx.request.url.searchParams.get("device") || undefined;
   const data = await sensorService.getStats(deviceName);
   ctx.response.body = { success: true, data };
+});
+
+// Endpoint di debug per vedere l'ultima humidity
+router.get("/api/sensors/latest-humidity", async (ctx) => {
+  const humidity = await sensorService.getLatestHumidity();
+  ctx.response.body = { success: true, humidity };
 });
 
 // Error handling

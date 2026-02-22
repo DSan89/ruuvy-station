@@ -22,13 +22,17 @@ echo -e "${YELLOW}Directory:${NC} $WORK_DIR"
 echo -e "${YELLOW}Log file:${NC} $LOG_FILE"
 echo ""
 
-# Esegui main.js con Node.js in background
+
+# Esegui main.js con Node.js in background e salva il PID
 sudo nohup npm run dev > "$LOG_FILE" 2>&1 &
 PID=$!
+PID_FILE="$WORK_DIR/main.pid"
+echo $PID > "$PID_FILE"
 
 echo -e "${GREEN}✓ main.js avviato in background${NC}"
 echo -e "${GREEN}PID: $PID${NC}"
+echo -e "${GREEN}PID file: $PID_FILE${NC}"
 echo ""
 echo "Comandi utili:"
 echo "  • Logs:  tail -f $LOG_FILE"
-echo "  • Stop:  kill $PID"
+echo "  • Stop:  ./stop-main.sh"

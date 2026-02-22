@@ -159,6 +159,8 @@ export class SensorService {
   async getConfig(): Promise<{
     smartPlugIp: string;
     temperatureThreshold: number;
+    humidityThreshold: number;
+    interval: number;
   }> {
     if (!this.configCollection) throw new Error("Database not connected");
 
@@ -169,12 +171,20 @@ export class SensorService {
       temperatureThreshold:
         config?.temperatureThreshold ||
         parseInt(Deno.env.get("TEMPERATURE_THRESHOLD") || "25"),
+      humidityThreshold:
+        config?.humidityThreshold ||
+        parseInt(Deno.env.get("HUMIDITY_THRESHOLD") || "50"),
+      interval:
+        config?.interval ||
+        parseInt(Deno.env.get("SMARTPLUG_INTERVAL") || "60"),
     };
   }
 
   async updateConfig(
     smartPlugIp: string,
     temperatureThreshold: number,
+    humidityThreshold: number,
+    interval: number,
   ): Promise<void> {
     if (!this.configCollection) throw new Error("Database not connected");
 
@@ -184,10 +194,26 @@ export class SensorService {
         $set: {
           smartPlugIp,
           temperatureThreshold,
+          humidityThreshold,
+          interval,
           updatedAt: new Date(),
         },
       },
       { upsert: true },
+    );
+  }
+  async getLatestHumidity(): Promise<number | undefined> {
+    if (!this.collection) throw new Error("Database not connected");
+
+    return (
+      (
+        await this.collection.findOne(
+          {},
+          {
+            sort: { timestamp: -1 },
+          },
+        )
+      )?.humidity ?? undefined
     );
   }
 }

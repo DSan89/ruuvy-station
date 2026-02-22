@@ -1,20 +1,35 @@
 export class SmartPlugService {
   private plugState: boolean | undefined = undefined;
   constructor(
-    private threshold: () => Promise<number>,
+    private temperatureThreshold: () => Promise<number>,
+    private humidityThreshold: () => Promise<number>,
     private plugIp: () => Promise<string>,
     private getLatestTemperature: () => Promise<number | undefined>,
+    private getLatestHumidity: () => Promise<number | undefined>,
   ) {}
 
   async ifTemperatureIsOver(): Promise<boolean> {
     const temperature = await this.getLatestTemperature();
     console.log(
-      `Latest temperature: ${temperature}°C, Threshold: ${await this.threshold()}°C`,
+      `Latest temperature: ${temperature}°C, Threshold: ${await this.temperatureThreshold()}°C}%`,
     );
-    if (!temperature) {
+    if (temperature === undefined) {
       throw new Error("No temperature data available");
     }
-    return temperature > (await this.threshold());
+    // Logica custom da implementare
+    return temperature > (await this.temperatureThreshold());
+  }
+
+  async ifHumidityIsOver(): Promise<boolean> {
+    const humidity = await this.getLatestHumidity();
+    console.log(
+      `Latest humidity: ${humidity}%, Humidity Threshold: ${await this.humidityThreshold()}%`,
+    );
+    if (humidity === undefined) {
+      throw new Error("No humidity data available");
+    }
+    // Logica custom da implementare
+    return humidity > (await this.humidityThreshold());
   }
 
   async turnOnPlug() {
@@ -36,7 +51,7 @@ export class SmartPlugService {
   }
 
   async run() {
-    if (await this.ifTemperatureIsOver()) {
+    if ((await this.ifTemperatureIsOver()) || (await this.ifHumidityIsOver())) {
       await this.turnOnPlug();
     } else {
       await this.turnOffPlug();
