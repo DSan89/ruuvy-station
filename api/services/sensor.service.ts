@@ -173,7 +173,7 @@ export class SensorService {
         parseInt(Deno.env.get("TEMPERATURE_THRESHOLD") || "25"),
       humidityThreshold:
         config?.humidityThreshold ||
-        parseInt(Deno.env.get("HUMIDITY_THRESHOLD") || "50"),
+        parseInt(Deno.env.get("HUMIDITY_THRESHOLD") || "70"),
       interval:
         config?.interval ||
         parseInt(Deno.env.get("SMARTPLUG_INTERVAL") || "60"),
