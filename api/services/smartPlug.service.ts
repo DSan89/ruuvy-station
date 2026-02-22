@@ -16,7 +16,6 @@ export class SmartPlugService {
     if (temperature === undefined) {
       throw new Error("No temperature data available");
     }
-    // Logica custom da implementare
     return temperature > (await this.temperatureThreshold());
   }
 
@@ -28,8 +27,12 @@ export class SmartPlugService {
     if (humidity === undefined) {
       throw new Error("No humidity data available");
     }
-    // Logica custom da implementare
     return humidity > (await this.humidityThreshold());
+  }
+
+  ifIsNight(): boolean {
+    const hour = new Date().getHours();
+    return hour <= 9 || hour >= 21; // Considera notte dalle 21 alle 9
   }
 
   async turnOnPlug() {
@@ -51,7 +54,10 @@ export class SmartPlugService {
   }
 
   async run() {
-    if ((await this.ifTemperatureIsOver()) || (await this.ifHumidityIsOver())) {
+    if (
+      (await this.ifTemperatureIsOver()) ||
+      ((await this.ifHumidityIsOver()) && !this.ifIsNight())
+    ) {
       await this.turnOnPlug();
     } else {
       await this.turnOffPlug();
