@@ -22,7 +22,7 @@ echo -e "${YELLOW}Directory:${NC} $WORK_DIR"
 echo -e "${YELLOW}Log file:${NC} $LOG_FILE"
 echo ""
 
-deno run --allow-net --unstable-cron cron.ts > log/cron.log 2>&1 &
+# deno run --allow-net --unstable-cron cron.ts > log/cron.log 2>&1 &
 
 
 # Esegui api/main.ts con Deno in background e salva il PID
