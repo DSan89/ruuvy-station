@@ -24,7 +24,7 @@ echo ""
 
 
 # Esegui main.js con Node.js in background e salva il PID
-sudo nohup npm run dev > "$LOG_FILE" 2>&1 &
+npm run dev > "$LOG_FILE" 2>&1 &
 PID=$!
 PID_FILE="$WORK_DIR/main.pid"
 echo $PID > "$PID_FILE"
