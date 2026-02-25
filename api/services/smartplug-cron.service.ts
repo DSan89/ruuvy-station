@@ -10,23 +10,27 @@ export class SmartPlugCronService {
     this.interval = interval;
     this.start();
   }
+  private async process() {
+    try {
+      await this.smartPlugService.run();
+      console.log("[Periodic] SmartPlugService.run() eseguito");
+    } catch (e) {
+      console.error("[Periodic] Errore SmartPlugService:", e);
+    }
+  }
 
-  private start() {
+  private async start() {
     this.clear();
+    await this.process();
     this.intervalId = setInterval(async () => {
-      try {
-        await this.smartPlugService.run();
-        console.log("[Periodic] SmartPlugService.run() eseguito");
-      } catch (e) {
-        console.error("[Periodic] Errore SmartPlugService:", e);
-      }
+      await this.process();
     }, this.interval * 1000);
   }
 
-  updateInterval(newInterval: number) {
+  async updateInterval(newInterval: number) {
     if (this.interval !== newInterval) {
       this.interval = newInterval;
-      this.start();
+      await this.start();
     }
   }
 

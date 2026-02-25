@@ -498,6 +498,18 @@
                 placeholder="es. 25"
               />
             </div>
+            <div class="form-group">
+              <label for="humidityThresholdInput">Soglia Umidità (%)</label>
+              <input
+                type="number"
+                id="humidityThresholdInput"
+                placeholder="es. 50"
+              />
+            </div>
+            <div class="form-group">
+              <label for="intervalInput">Intervallo Aggiornamento (min)</label>
+              <input type="number" id="intervalInput" placeholder="es. 5" />
+            </div>
             <button onclick="saveConfig()" id="saveConfigBtn">
               💾 Salva Configurazione
             </button>
@@ -971,6 +983,10 @@
               result.data.smartPlugIp;
             document.getElementById("temperatureThresholdInput").value =
               result.data.temperatureThreshold;
+            document.getElementById("humidityThresholdInput").value =
+              result.data.humidityThreshold;
+            document.getElementById("intervalInput").value =
+              result.data.interval / 60;
           }
         } catch (error) {
           console.error("Error loading config:", error);
@@ -989,8 +1005,18 @@
           const temperatureThreshold = parseInt(
             document.getElementById("temperatureThresholdInput").value,
           );
+          const humidityThreshold = parseInt(
+            document.getElementById("humidityThresholdInput").value,
+          );
+          const interval =
+            parseInt(document.getElementById("intervalInput").value) * 60;
 
-          if (!smartPlugIp || !temperatureThreshold) {
+          if (
+            !smartPlugIp ||
+            !temperatureThreshold ||
+            !humidityThreshold ||
+            !interval
+          ) {
             throw new Error("Compilare tutti i campi");
           }
 
@@ -1002,8 +1028,8 @@
             body: JSON.stringify({
               smartPlugIp,
               temperatureThreshold,
-              humidityThreshold: 70,
-              interval: 60,
+              humidityThreshold,
+              interval,
             }),
           });
 
