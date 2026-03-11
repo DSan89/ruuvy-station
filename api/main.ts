@@ -161,7 +161,10 @@ router.get("/health", async (ctx) => {
 router.get("/api/config", async (ctx) => {
   try {
     const config = await sensorService.getConfig();
-    ctx.response.body = { success: true, data: config };
+    ctx.response.body = {
+      success: true,
+      data: { ...config, processingStatus: smartPlugCronService?.isRunning },
+    };
   } catch (error: any) {
     ctx.response.status = 500;
     ctx.response.body = { success: false, error: error.message };
@@ -297,6 +300,35 @@ router.get("/api/stats", async (ctx) => {
 router.get("/api/sensors/latest-humidity", async (ctx) => {
   const humidity = await sensorService.getLatestHumidity();
   ctx.response.body = { success: true, humidity };
+});
+
+router.post("/api/stop-processing", (ctx) => {
+  if (smartPlugCronService) {
+    smartPlugCronService.clear();
+  }
+  ctx.response.body = { success: true, message: "Periodic task stopped" };
+});
+
+router.post("/api/turn-on", (ctx) => {
+  if (smartPlugService) {
+    smartPlugService.turnOnPlug();
+  }
+  ctx.response.body = { success: true, message: "Plug turned on" };
+});
+
+router.post("/api/turn-off", (ctx) => {
+  if (smartPlugService) {
+    smartPlugService.turnOffPlug();
+  }
+  ctx.response.body = { success: true, message: "Plug turned off" };
+});
+
+router.post("/api/start-processing", (ctx) => {
+  if (smartPlugCronService) {
+    smartPlugCronService.clear();
+    smartPlugCronService.start();
+  }
+  ctx.response.body = { success: true, message: "Periodic task started" };
 });
 
 // Error handling

@@ -451,8 +451,26 @@
           <button onclick="toggleAutoRefresh()">
             ⏱️ Auto-refresh: <span id="autoRefreshStatus">OFF</span>
           </button>
+        </div>
+        <div class="device-selector">
           <button onclick="processData()" id="processBtn">
             ⚙️ Elabora Dati
+          </button>
+          <button onclick="stopProcessing()" id="stopProcessingBtn">
+            ⏹️ Ferma Elaborazione
+          </button>
+          <button onclick="startProcessing()" id="startProcessingBtn">
+            ▶️ Avvia Elaborazione
+          </button>
+          <div>Status Elaborazione: <span id="processingStatus">-</span></div>
+        </div>
+
+        <div class="device-selector">
+          <button onclick="turnOffPlug()" id="turnOffPlugBtn">
+            ⏹️ Spegni Smart Plug
+          </button>
+          <button onclick="turnOnPlug()" id="turnOnPlugBtn">
+            ▶️ Accendi Smart Plug
           </button>
         </div>
 
@@ -507,9 +525,10 @@
               />
             </div>
             <div class="form-group">
-              <label for="intervalInput">Intervallo Aggiornamento (min)</label>
+              <label for="intervalInput">Intervallo Aggiornamento (sec)</label>
               <input type="number" id="intervalInput" placeholder="es. 5" />
             </div>
+
             <button onclick="saveConfig()" id="saveConfigBtn">
               💾 Salva Configurazione
             </button>
@@ -657,14 +676,21 @@
           ...options.headers,
           Authorization: `Bearer ${authToken}`,
         };
-        return fetch(url, { ...options, headers });
+        return fetch(url, { ...options, headers }).catch((error) => {
+          if (error.status === 401) {
+            showLogin();
+          }
+        });
       }
 
       async function fetchDevices() {
         try {
           const response = await makeAuthFetch(`${API_BASE}/api/devices`);
           const result = await response.json();
-
+          if (response.status === 401) {
+            showLogin();
+            return;
+          }
           if (result.success && result.data.length > 0) {
             const select = document.getElementById("deviceSelect");
             select.innerHTML = '<option value="">Tutti i dispositivi</option>';
@@ -986,7 +1012,11 @@
             document.getElementById("humidityThresholdInput").value =
               result.data.humidityThreshold;
             document.getElementById("intervalInput").value =
-              result.data.interval / 60;
+              result.data.interval;
+            document.getElementById("processingStatus").textContent = result
+              .data.processingStatus
+              ? "Running"
+              : "Stopped";
           }
         } catch (error) {
           console.error("Error loading config:", error);
@@ -1008,8 +1038,9 @@
           const humidityThreshold = parseInt(
             document.getElementById("humidityThresholdInput").value,
           );
-          const interval =
-            parseInt(document.getElementById("intervalInput").value) * 60;
+          const interval = parseInt(
+            document.getElementById("intervalInput").value,
+          );
 
           if (
             !smartPlugIp ||
@@ -1051,6 +1082,60 @@
             saveBtn.textContent = originalText;
             saveBtn.disabled = false;
           }, 2000);
+          alert(`Errore: ${error.message}`);
+        }
+      }
+
+      async function stopProcessing() {
+        try {
+          const response = await makeAuthFetch(
+            `${API_BASE}/api/stop-processing`,
+            {
+              method: "POST",
+            },
+          );
+          const result = await response.json();
+        } catch (error) {
+          console.error("Error stopping processing:", error);
+          alert(`Errore: ${error.message}`);
+        }
+      }
+
+      async function startProcessing() {
+        try {
+          const response = await makeAuthFetch(
+            `${API_BASE}/api/start-processing`,
+            {
+              method: "POST",
+            },
+          );
+          const result = await response.json();
+        } catch (error) {
+          console.error("Error starting processing:", error);
+          alert(`Errore: ${error.message}`);
+        }
+      }
+
+      async function turnOffPlug() {
+        try {
+          const response = await makeAuthFetch(`${API_BASE}/api/turn-off`, {
+            method: "POST",
+          });
+          const result = await response.json();
+        } catch (error) {
+          console.error("Error turning off plug:", error);
+          alert(`Errore: ${error.message}`);
+        }
+      }
+
+      async function turnOnPlug() {
+        try {
+          const response = await makeAuthFetch(`${API_BASE}/api/turn-on`, {
+            method: "POST",
+          });
+          const result = await response.json();
+        } catch (error) {
+          console.error("Error turning on plug:", error);
           alert(`Errore: ${error.message}`);
         }
       }

@@ -5,7 +5,7 @@ export class SmartPlugCronService {
   private interval: number;
   private smartPlugService: SmartPlugService;
 
-  constructor(smartPlugService: SmartPlugService, interval: number = 60) {
+  constructor(smartPlugService: SmartPlugService, interval: number = 10) {
     this.smartPlugService = smartPlugService;
     this.interval = interval;
     this.start();
@@ -19,7 +19,11 @@ export class SmartPlugCronService {
     }
   }
 
-  private async start() {
+  get isRunning(): boolean {
+    return this.intervalId !== undefined;
+  }
+
+  async start() {
     this.clear();
     await this.process();
     this.intervalId = setInterval(async () => {
